@@ -1,3 +1,6 @@
+import os
+
+from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -17,6 +20,8 @@ from api.pagination import LimitPageNumberPagination
 from api.permissions import IsAdminOrReadOnly, IsOwnerOrReadOnly
 from api.serializers import (CropRecipeSerializer, IngredientSerializer,
                              RecipeSerializer, TagSerializer)
+
+DATA_ROOT = os.path.join(settings.BASE_DIR, 'data')
 
 
 class TagsViewSet(ReadOnlyModelViewSet):
@@ -79,18 +84,19 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 }
             else:
                 final_list[name]['amount'] += item[2]
+        font_path = os.path.join(DATA_ROOT, 'custom_font.ttf')
         pdfmetrics.registerFont(
-            TTFont('Slimamif', 'Slimamif.ttf', 'UTF-8'))
+            TTFont('custom_font', font_path, 'UTF-8'))
         response = HttpResponse(content_type='application/pdf')
         response['Content-Disposition'] = ('attachment; '
                                            'filename="shopping_list.pdf"')
         page = canvas.Canvas(response)
-        page.setFont('Slimamif', size=24)
+        page.setFont('custom_font', size=24)
         page.drawString(200, 800, 'Список ингредиентов')
-        page.setFont('Slimamif', size=16)
+        page.setFont('custom_font', size=16)
         height = 750
         for i, (name, data) in enumerate(final_list.items(), 1):
-            page.drawString(75, height, (f'<{i}> {name} - {data["amount"]}, '
+            page.drawString(75, height, (f'{i}. {name} - {data["amount"]}, '
                                          f'{data["measurement_unit"]}'))
             height -= 25
         page.showPage()
