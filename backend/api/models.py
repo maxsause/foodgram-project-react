@@ -16,7 +16,7 @@ class Ingredient(models.Model):
     )
 
     class Meta:
-        ordering = ['id']
+        ordering = ('id', )
         constraints = [
             models.UniqueConstraint(
                 fields=['name', 'measurement_unit'],

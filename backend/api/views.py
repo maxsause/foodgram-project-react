@@ -1,12 +1,5 @@
-import os
-
-from django.conf import settings
-from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.pdfgen import canvas
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -20,8 +13,7 @@ from api.pagination import LimitPageNumberPagination
 from api.permissions import IsAdminOrReadOnly, IsOwnerOrReadOnly
 from api.serializers import (CropRecipeSerializer, IngredientSerializer,
                              RecipeSerializer, TagSerializer)
-
-DATA_ROOT = os.path.join(settings.BASE_DIR, 'data')
+from .utils import pdf_shopping_cart
 
 
 class TagsViewSet(ReadOnlyModelViewSet):
@@ -54,9 +46,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def favorite(self, request, pk=None):
         if request.method == 'POST':
             return self.add_obj(Favorite, request.user, pk)
-        elif request.method == 'DELETE':
-            return self.delete_obj(Favorite, request.user, pk)
-        return None
+        return self.delete_obj(Favorite, request.user, pk)
 
     @action(detail=True, methods=['post', 'delete'],
             permission_classes=[IsAuthenticated])
@@ -84,24 +74,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 }
             else:
                 final_list[name]['amount'] += item[2]
-        font_path = os.path.join(DATA_ROOT, 'custom_font.ttf')
-        pdfmetrics.registerFont(
-            TTFont('custom_font', font_path, 'UTF-8'))
-        response = HttpResponse(content_type='application/pdf')
-        response['Content-Disposition'] = ('attachment; '
-                                           'filename="shopping_list.pdf"')
-        page = canvas.Canvas(response)
-        page.setFont('custom_font', size=24)
-        page.drawString(200, 800, 'Список ингредиентов')
-        page.setFont('custom_font', size=16)
-        height = 750
-        for i, (name, data) in enumerate(final_list.items(), 1):
-            page.drawString(75, height, (f'{i}. {name} - {data["amount"]}, '
-                                         f'{data["measurement_unit"]}'))
-            height -= 25
-        page.showPage()
-        page.save()
-        return response
+        return pdf_shopping_cart(final_list)
 
     def add_obj(self, model, user, pk):
         if model.objects.filter(user=user, recipe__id=pk).exists():
