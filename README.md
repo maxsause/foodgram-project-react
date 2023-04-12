@@ -1,4 +1,4 @@
-# Проект продуктового помощника "Foodgram"
+# Проект продуктового помощника "Foodgram" [![foodgram](https://github.com/maxsause/foodgram-project-react/actions/workflows/main.yml/badge.svg)](https://github.com/maxsause/foodgram-project-react/actions/workflows/main.yml)
 
 Foodgram реализован для публикации рецептов. Авторизованные пользователи
 могут подписываться на понравившихся авторов, добавлять рецепты в избранное,
