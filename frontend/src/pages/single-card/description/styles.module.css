@@ -1,5 +1,7 @@
 .description {
   padding-bottom: 20px;
+  white-space: pre-wrap;
+  line-height: 150%;
 }
 
 .description__title {
